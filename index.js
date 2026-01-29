@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 3000;
 
@@ -32,9 +32,18 @@ async function run() {
         // jobs api
         const jobsCollection = client.db('careerBridge').collection('jobs')
 
+        // all jobs api
         app.get('/jobs', async (req, res) => {
             const cursor = jobsCollection.find();
             const result = await cursor.toArray();
+            res.send(result)
+        })
+
+        // a single job api
+        app.get('/jobs/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await jobsCollection.findOne(query);
             res.send(result)
         })
 
