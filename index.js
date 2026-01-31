@@ -48,7 +48,18 @@ async function run() {
             res.send(result)
         })
 
-        // jon applications related apis
+        // job applications related APIs
+
+        app.get('/applications', async (req, res) => {
+            const email = req.query.email;
+
+            const query = {
+                applicant: email
+            }
+            const result = await applicationCollection.find(query).toArray();
+            res.send(result);
+        })
+
         app.post('/applications', async (req, res) => {
             const application = req.body;
             const result = await applicationCollection.insertOne(application);
