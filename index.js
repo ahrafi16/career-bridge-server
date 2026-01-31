@@ -30,7 +30,8 @@ async function run() {
 
 
         // jobs api
-        const jobsCollection = client.db('careerBridge').collection('jobs')
+        const jobsCollection = client.db('careerBridge').collection('jobs');
+        const applicationCollection = client.db('careerBridge').collection('applications');
 
         // all jobs api
         app.get('/jobs', async (req, res) => {
@@ -46,6 +47,14 @@ async function run() {
             const result = await jobsCollection.findOne(query);
             res.send(result)
         })
+
+        // jon applications related apis
+        app.post('/applications', async (req, res) => {
+            const application = req.body;
+            const result = await applicationCollection.insertOne(application);
+            res.send(result);
+        })
+
 
 
         // Send a ping to confirm a successful connection
