@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 3000;
@@ -33,6 +34,14 @@ async function run() {
         const jobsCollection = client.db('careerBridge').collection('jobs');
         const applicationCollection = client.db('careerBridge').collection('applications');
 
+        // jwt token related api
+        app.post('/jwt', async (req, res) => {
+            const { email } = req.body;
+            const user = { email };
+            const token = jwt.sign(user, 'sccret', { expiresIn: '1h' });
+            res.send({ token });
+        })
+
         // all jobs api
         app.get('/jobs', async (req, res) => {
 
@@ -45,6 +54,20 @@ async function run() {
             const cursor = jobsCollection.find(query);
             const result = await cursor.toArray();
             res.send(result)
+        })
+
+        app.get('/jobs/applications', async (req, res) => {
+            const email = req.query.email;
+            const query = { hr_email: email };
+            const jobs = await jobsCollection.find(query).toArray();
+
+            // should use aggregate to have optimum data fetching
+            for (const job of jobs) {
+                const applicationQuery = { jobId: job._id.toString() };
+                const application_count = await applicationCollection.countDocuments(applicationQuery)
+                job.application_count = application_count;
+            }
+            res.send(jobs);
         })
 
         // a single job api
@@ -60,6 +83,7 @@ async function run() {
             const result = await jobsCollection.insertOne(newJob);
             res.send(result);
         })
+
 
         // job applications related APIs
 
